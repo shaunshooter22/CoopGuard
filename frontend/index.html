@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CoopGuard</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <img src="assets/logo.png" alt="CoopGuard logo" class="logo">
+      <div>
+        <h1>Smart Chicken Coop Door System</h1>
+        <p class="subtitle">Live monitoring &amp; remote control</p>
+      </div>
+    </div>
+    <button id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
+  </header>
+
+  <main class="dashboard">
+
+    <section class="card" id="status-card">
+      <h2>🚪 Door Status</h2>
+      <p id="door-status" class="status-value">Loading...</p>
+    </section>
+
+    <section class="card" id="control-card">
+      <h2>🎛️ Remote Control</h2>
+      <div class="button-group">
+        <button id="open-btn">Open Door</button>
+        <button id="close-btn">Close Door</button>
+      </div>
+    </section>
+
+    <section class="card" id="automode-card">
+      <h2>⚙️ Automatic Mode</h2>
+      <label class="toggle-row">
+        <input type="checkbox" id="automode-toggle">
+        Enable Automatic Mode
+      </label>
+      <select id="automode-source">
+        <option value="ldr">Light Sensor (LDR)</option>
+        <option value="rtc">Clock (RTC)</option>
+        <option value="both">Both</option>
+      </select>
+    </section>
+
+    <section class="card" id="sensors-card">
+      <h2>📡 Live Sensor Readings</h2>
+      <div class="tile-grid">
+        <div class="tile">
+          <span class="tile-label">Light Level</span>
+          <span class="tile-value" id="ldr-value">--</span>
+        </div>
+        <div class="tile">
+          <span class="tile-label">RTC Time</span>
+          <span class="tile-value" id="rtc-value">--</span>
+        </div>
+        <div class="tile">
+          <span class="tile-label">Top Limit Switch</span>
+          <span class="tile-value" id="limit-top">--</span>
+        </div>
+        <div class="tile">
+          <span class="tile-label">Bottom Limit Switch</span>
+          <span class="tile-value" id="limit-bottom">--</span>
+        </div>
+        <div class="tile">
+          <span class="tile-label">Battery</span>
+          <span class="tile-value" id="battery-value">-- V</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="schedule-card">
+      <h2>🕒 Schedule</h2>
+
+      <label>Open Time</label>
+      <div class="time-picker">
+        <select id="open-hour"></select>
+        <span>:</span>
+        <select id="open-minute"></select>
+        <select id="open-ampm">
+          <option value="AM">AM</option>
+          <option value="PM">PM</option>
+        </select>
+      </div>
+
+      <label>Close Time</label>
+      <div class="time-picker">
+        <select id="close-hour"></select>
+        <span>:</span>
+        <select id="close-minute"></select>
+        <select id="close-ampm">
+          <option value="AM">AM</option>
+          <option value="PM">PM</option>
+        </select>
+      </div>
+
+      <button id="save-schedule-btn">Save Schedule</button>
+    </section>
+
+    <section class="card" id="history-card">
+      <h2>📜 Activity History</h2>
+      <ul id="history-list"></ul>
+    </section>
+
+    <section class="card" id="settings-card">
+      <h2>🛠️ Settings</h2>
+      <div class="settings-grid">
+        <label>WiFi SSID <input type="text" id="wifi-ssid"></label>
+        <label>WiFi Password <input type="password" id="wifi-password"></label>
+        <label>Light Sensitivity <input type="number" id="light-sensitivity"></label>
+      </div>
+
+      <label class="toggle-row"><input type="checkbox" id="notify-open"> Notify on door open</label>
+      <label class="toggle-row"><input type="checkbox" id="notify-close"> Notify on door close</label>
+      <label class="toggle-row"><input type="checkbox" id="notify-battery"> Notify on low battery</label>
+      <label class="toggle-row"><input type="checkbox" id="notify-jam"> Notify on motor jam</label>
+
+      <button id="save-settings-btn">Save Settings</button>
+    </section>
+
+  </main>
+
+  <div id="notification-banner" class="hidden"></div>
+
+  <script>
+    const themeBtn = document.getElementById('theme-toggle');
+    const root = document.documentElement;
+
+    if (localStorage.getItem('coopguard-theme') === 'dark') {
+      root.setAttribute('data-theme', 'dark');
+      themeBtn.textContent = '☀️';
+    }
+
+    themeBtn.addEventListener('click', () => {
+      const isDark = root.getAttribute('data-theme') === 'dark';
+      if (isDark) {
+        root.removeAttribute('data-theme');
+        themeBtn.textContent = '🌙';
+        localStorage.setItem('coopguard-theme', 'light');
+      } else {
+        root.setAttribute('data-theme', 'dark');
+        themeBtn.textContent = '☀️';
+        localStorage.setItem('coopguard-theme', 'dark');
+      }
+    });
+  </script>
+  <script src="js/app.js"></script>
+</body>
+</html>
