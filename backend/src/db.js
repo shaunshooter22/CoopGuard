@@ -1,7 +1,15 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const fs = require('fs');
 
-const dbPath = path.join(__dirname, '..', 'database', 'coop.db');
+const dbDir = path.join(__dirname, '..', 'database');
+
+// Ensure the database folder exists before trying to open a file inside it
+if (!fs.existsSync(dbDir)) {
+  fs.mkdirSync(dbDir, { recursive: true });
+}
+
+const dbPath = path.join(dbDir, 'coop.db');
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
     console.error('Failed to connect to database:', err.message);
