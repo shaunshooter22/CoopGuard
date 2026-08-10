@@ -22,6 +22,7 @@ const openBtn = document.getElementById('open-btn');
 const closeBtn = document.getElementById('close-btn');
 
 let currentDoorStatus = null;
+let commandPending = false;
 
 function setDoorStatus(status) {
   currentDoorStatus = status;
@@ -46,6 +47,7 @@ async function loadDoorStatus() {
 
 // ===== Remote control buttons =====
 openBtn.addEventListener('click', () => {
+  if (commandPending) return;
   if (currentDoorStatus === 'open' || currentDoorStatus === 'opening') {
     showNotification('Door is already open');
     return;
@@ -54,6 +56,7 @@ openBtn.addEventListener('click', () => {
 });
 
 closeBtn.addEventListener('click', () => {
+  if (commandPending) return;
   if (currentDoorStatus === 'closed' || currentDoorStatus === 'closing') {
     showNotification('Door is already closed');
     return;
@@ -62,6 +65,10 @@ closeBtn.addEventListener('click', () => {
 });
 
 async function sendCommand(command) {
+  commandPending = true;
+  openBtn.disabled = true;
+  closeBtn.disabled = true;
+
   try {
     const res = await fetch(`${API_BASE}/door/command`, {
       method: 'POST',
@@ -73,6 +80,10 @@ async function sendCommand(command) {
   } catch (err) {
     showNotification('Failed to send command', true);
     console.error(err);
+  } finally {
+    commandPending = false;
+    openBtn.disabled = false;
+    closeBtn.disabled = false;
   }
 }
 

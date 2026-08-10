@@ -4,6 +4,7 @@ const cors = require('cors');
 const http = require('http');
 const WebSocket = require('ws');
 const path = require('path');
+const crypto = require('crypto');
 const mqttClient = require('./mqttClient');
 const db = require('./db');
 
@@ -22,20 +23,21 @@ const clients = new Set();
 wss.on('connection', (ws) => {
   console.log('Website connected via WebSocket');
   clients.add(ws);
-
-  ws.on('close', () => {
-    clients.delete(ws);
-  });
+  ws.on('close', () => clients.delete(ws));
 });
 
 function broadcast(data) {
   const message = JSON.stringify(data);
   clients.forEach((ws) => {
-    if (ws.readyState === WebSocket.OPEN) {
-      ws.send(message);
-    }
+    if (ws.readyState === WebSocket.OPEN) ws.send(message);
   });
 }
+
+// ===== Command dedup guard: blocks accidental double-submits =====
+// (e.g. a double-click that slips past the disabled-button check)
+let lastCommandSent = null;
+let lastCommandTime = 0;
+const DUPLICATE_COMMAND_WINDOW_MS = 1000;
 
 app.get('/api/door/status', (req, res) => {
   db.get('SELECT * FROM door_state WHERE id = 1', (err, row) => {
@@ -51,8 +53,26 @@ app.post('/api/door/command', (req, res) => {
     return res.status(400).json({ error: 'Command must be "open" or "close"' });
   }
 
-  mqttClient.publish('coop/door1/command', command);
-  res.json({ message: `Command "${command}" sent to door` });
+  const now = Date.now();
+  if (command === lastCommandSent && now - lastCommandTime < DUPLICATE_COMMAND_WINDOW_MS) {
+    return res.status(429).json({ error: 'Duplicate command ignored (sent too quickly)' });
+  }
+  lastCommandSent = command;
+  lastCommandTime = now;
+
+  const requestId = crypto.randomUUID();
+
+  console.log('[MOTOR COMMAND]', {
+    command,
+    source: 'web-button',
+    requestId,
+    route: '/api/door/command',
+    timestamp: new Date().toISOString(),
+    retain: false,
+  });
+
+  mqttClient.publish('coop/door1/command', command, { qos: 1, retain: false });
+  res.json({ message: `Command "${command}" sent to door`, requestId });
 });
 
 app.get('/api/door/automode', (req, res) => {
@@ -77,7 +97,7 @@ app.post('/api/door/automode', (req, res) => {
     [enabled ? 1 : 0, source],
     function (err) {
       if (err) return res.status(500).json({ error: err.message });
-      mqttClient.publish('coop/door1/config/automode', JSON.stringify({ enabled, source }));
+      mqttClient.publish('coop/door1/config/automode', JSON.stringify({ enabled, source }), { qos: 1, retain: false });
       res.json({ message: 'Auto mode settings updated', enabled, source });
     }
   );
@@ -103,7 +123,7 @@ app.post('/api/schedule', (req, res) => {
     [open_time, close_time],
     function (err) {
       if (err) return res.status(500).json({ error: err.message });
-      mqttClient.publish('coop/door1/config/schedule', JSON.stringify({ open_time, close_time }));
+      mqttClient.publish('coop/door1/config/schedule', JSON.stringify({ open_time, close_time }), { qos: 1, retain: false });
       res.json({ message: 'Schedule updated', open_time, close_time });
     }
   );
@@ -140,7 +160,7 @@ app.post('/api/settings', (req, res) => {
     [light_sensitivity, wifi_ssid, wifi_password, notify_open, notify_close, notify_battery, notify_jam],
     function (err) {
       if (err) return res.status(500).json({ error: err.message });
-      mqttClient.publish('coop/door1/config/sensitivity', String(light_sensitivity ?? ''));
+      mqttClient.publish('coop/door1/config/sensitivity', String(light_sensitivity ?? ''), { qos: 1, retain: false });
       res.json({ message: 'Settings updated' });
     }
   );
