@@ -1,5 +1,5 @@
-const API_BASE = 'http://localhost:3000/api';
-const WS_URL = 'ws://localhost:3000';
+const API_BASE = 'https://coopguard.onrender.com/api';
+const WS_URL = 'wss://coopguard.onrender.com';
 
 // ===== Notification banner =====
 const banner = document.getElementById('notification-banner');
