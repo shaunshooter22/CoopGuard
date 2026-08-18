@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CoopGuard — Project Team</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <img src="assets/logo.png" alt="CoopGuard logo" class="logo">
+      <div>
+        <h1>CoopGuard</h1>
+        <p class="subtitle">Project Team — Group 69</p>
+      </div>
+    </div>
+    <button id="theme-toggle" aria-label="Toggle dark mode">🌙</button>
+  </header>
+
+  <main class="dashboard">
+
+    <section class="card">
+      <h2>👥 Group 69</h2>
+      <ul id="team-list" class="team-list">
+        <li><span class="team-num">1.</span> <span class="team-name">Ocquaye Caroline</span> <span class="team-index">9032223</span></li>
+        <li><span class="team-num">2.</span> <span class="team-name">Shooter Shaun Keane</span> <span class="team-index">9043723</span></li>
+        <li><span class="team-num">3.</span> <span class="team-name">Daniel Owura Kwaku Junior</span> <span class="team-index">9024523</span></li>
+        <li><span class="team-num">4.</span> <span class="team-name">Owusu-Nyannor Charles</span> <span class="team-index">9039623</span></li>
+        <li><span class="team-num">5.</span> <span class="team-name">Sam Kingsford</span> <span class="team-index">9041423</span></li>
+        <li><span class="team-num">6.</span> <span class="team-name">Duncan Prince</span> <span class="team-index">9016923</span></li>
+        <li><span class="team-num">7.</span> <span class="team-name">Eugene Gyan-Addai</span> <span class="team-index">9021423</span></li>
+        <li><span class="team-num">8.</span> <span class="team-name">Henewaa Gifty</span> <span class="team-index">9021723</span></li>
+        <li><span class="team-num">9.</span> <span class="team-name">Nigel Prempeh-Eck</span> <span class="team-index">9039923</span></li>
+      </ul>
+    </section>
+
+    <a href="index.html" class="back-link">&larr; Back to Dashboard</a>
+
+  </main>
+
+  <script>
+    const themeBtn = document.getElementById('theme-toggle');
+    const root = document.documentElement;
+
+    if (localStorage.getItem('coopguard-theme') === 'dark') {
+      root.setAttribute('data-theme', 'dark');
+      themeBtn.textContent = '☀️';
+    }
+
+    themeBtn.addEventListener('click', () => {
+      const isDark = root.getAttribute('data-theme') === 'dark';
+      if (isDark) {
+        root.removeAttribute('data-theme');
+        themeBtn.textContent = '🌙';
+        localStorage.setItem('coopguard-theme', 'light');
+      } else {
+        root.setAttribute('data-theme', 'dark');
+        themeBtn.textContent = '☀️';
+        localStorage.setItem('coopguard-theme', 'dark');
+      }
+    });
+  </script>
+</body>
+</html>
